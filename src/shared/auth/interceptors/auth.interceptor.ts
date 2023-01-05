@@ -57,6 +57,6 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   private _handle401Error(currentError: HttpErrorResponse): void {
-    this.router.navigate(['/public/signin'], { state: {error: currentError.error} });
+    this.router.navigate(['/public/sign-in'], { state: {error: currentError.error} });
   }
 }
