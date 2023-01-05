@@ -1,0 +1,20 @@
+<h3>Liste des héros</h3>
+
+<div class="d-flex">
+  <div *ngFor="let hero of heroList$ | async" class="card m-2" style="width: 18rem;">
+<!--    <img class="card-img-top" src="..." alt="Card image cap">-->
+    <div class="card-body">
+      <h5 class="card-title">{{ hero.heroName }}</h5>
+      <div class="card-text">
+        <dl>
+          <dt>Vrai nom</dt>
+          <dd>{{ hero.realName }}</dd>
+
+          <dt>Pouvoir</dt>
+          <dd>{{ hero.power }}</dd>
+        </dl>
+      </div>
+<!--      <a href="#" class="btn btn-primary">Go somewhere</a>-->
+    </div>
+  </div>
+</div>

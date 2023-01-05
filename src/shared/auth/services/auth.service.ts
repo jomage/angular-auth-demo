@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, take, tap } from 'rxjs';
+import { BehaviorSubject, map, Observable, of, take, tap } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { User } from '../models/user.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ export class AuthService {
 
   // Ici mon sujet est privé, on appelle la méthode getUserData pour chercher les infos.
   // Le type est "any" pour l'instant (sera changé selon la méthode d'authentification du back)
-  private _currentUser$ = new BehaviorSubject<any | null>(null);
+  private _currentUser$ = new BehaviorSubject<User | null>(null);
 
   // En dur pour l'instant
   private _endpoint = 'http://localhost:8081/auth'
@@ -20,26 +21,34 @@ export class AuthService {
     private router: Router,
   ) { }
 
-  getCurrentUser(): Observable<any | null> {
-    // Le sujet ne s'arrêtant jamais, on y met un take(1) pour être sûr qu'il se complète.
-    return this._currentUser$.asObservable().pipe(take(1));
+  getCurrentUser(): Observable<User | null> {
+    return this._currentUser$.asObservable();
   }
 
   /**
-   * Appelle le endpoint du back pour s'authentifier avec login/mot-de-passe. L'information du back renvoyée
-   * dépendra de celui-ci et de sa méthode pour s'authentifier.
+   * Appelle le endpoint du back pour s'authentifier avec login/mot-de-passe.
+   *
+   * Basic Auth : avec cette méthode, on a juste besoin d'envoyer un header "Authorization" qui contient
+   * le mot "Basic " suivi du "login:password" encodé en Base64.
+   *
+   * L'appel de cette méthode nous permet de "confirmer" avec le back que le login/mdp est correct et nous
+   * permet de construire les infos utilisateur pour notre front.
    */
-  login(login: string, password: string): Observable<any> {
+  login(login: string, password: string): Observable<boolean> {
     const params = new HttpParams()
       .set('login', login)
-      .set('mdp', password);
-    return this.http.post<any>(
+      .set('password', password);
+
+    return this.http.post<User>(
       `${this._endpoint}`,
-      { }, // format du body à adapter.
+      { },
       { params }
     ).pipe(
       // traitement de la réponse avant renvoi
-      tap((response) => this._setUserData(response))
+      tap((response: User) => this._setUserData(response, login, password)),
+
+      // Convertit en boolean
+      map((response) => !!response)
     );
   }
 
@@ -56,16 +65,26 @@ export class AuthService {
   /**
    * A pour but de sauvegarder dans un sujet / localstorage les infos de l'utilisateur en cas de succès à
    * l'authentification.
-   * @param response
+   *
+   * Basic Auth: se sert du login et mot de passe pour stocker la partie login:mdp utilisée pour construire
+   * les headers Authorization.
+   *
    * @private
    */
-  private _setUserData(response: any) {
+  private _setUserData(response: User | null, login?: string, password?: string) {
     console.log('Response du login: ', response);
-    if (!response) {
+    if (!response || !login || !password) {
       this._currentUser$.next(null);
+      return;
+    }
+
+    const user: User = {
+      ...response,
+      authData: window.btoa(`${login}:${password}`)
     }
 
     // Partie qui devra être adaptée en fonction de la réponse renvoyée par le back.
-    this._currentUser$.next(response);
+    console.log('next avec ' ,user)
+    this._currentUser$.next(user);
   }
 }

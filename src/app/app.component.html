@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <span class="navbar-brand" [routerLink]="'/'">
       Connecté :
-      <ng-container *ngIf="connected$ | async; else notLoggedIn">🟢</ng-container>
+      <ng-container *ngIf="connected; else notLoggedIn">🟢</ng-container>
       <ng-template #notLoggedIn>🔴</ng-template>
     </span>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -13,12 +13,22 @@
         <li class="nav-item">
           <a class="nav-link active" aria-current="page" [routerLink]="'/'">Accueil</a>
         </li>
-        <li class="nav-item">
+
+        <li class="nav-item" *ngIf="!connected">
           <a class="nav-link" [routerLink]="'/public/sign-in'">Connexion</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" [routerLink]="'/public/sign-up'">Se déconnecter</a>
-        </li>
+
+        <ng-container *ngIf="connected">
+          <li class="nav-item" >
+            <a class="nav-link" [routerLink]="'/private/dashboard'">Dashboard</a>
+          </li>
+          <li class="nav-item" >
+            <a class="nav-link" [routerLink]="'/private/heroes'">Liste des héros</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [routerLink]="'/'">Se déconnecter (todo)</a>
+          </li>
+        </ng-container>
       </ul>
     </div>
   </div>

@@ -5,9 +5,10 @@ import {
   HttpEvent,
   HttpInterceptor, HttpErrorResponse,
 } from '@angular/common/http';
-import { catchError, map, Observable, of, switchMap, take, throwError } from 'rxjs';
+import { catchError, map, Observable, of, switchMap, take, tap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { User } from '../models/user.interface';
 
 /**
  * Intercepte les requêtes sortantes (vers le back) et y applique le moyen de s'authentifier auprès du back, si
@@ -20,7 +21,7 @@ import { Router } from '@angular/router';
 export class AuthInterceptor implements HttpInterceptor {
 
   private _headerName = 'Authorization';
-  private _tokenPrefix = 'TODO'; // à changer selon la méthode d'identification
+  private _tokenPrefix = 'Basic'; // à changer selon la méthode d'identification
 
   constructor(
     private authService: AuthService,
@@ -28,15 +29,15 @@ export class AuthInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-
-
+    console.log('hey')
     return this.authService.getCurrentUser().pipe(
+      tap((v) => console.log('interceptor', v)),
       take(1),
-      switchMap((user: any) => {
+      switchMap((user: User| null) => {
         if (user) {
           // Les données utilisateur sont présentes : clone la requête en rajoutant le Header Authorization
           const setHeaders: any = {};
-          setHeaders[this._headerName] = `${this._tokenPrefix} ${user.token}`;
+          setHeaders[this._headerName] = `${this._tokenPrefix} ${user.authData}`;
 
           const modifiedReq = request.clone({ setHeaders })
           return next.handle(modifiedReq);

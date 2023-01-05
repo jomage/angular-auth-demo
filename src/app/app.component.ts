@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../shared/auth/services/auth.service';
 import { map } from 'rxjs';
 
@@ -7,11 +7,16 @@ import { map } from 'rxjs';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'angular-auth-demo';
 
-  connected$ = this.authService.getCurrentUser().pipe(map((user) => !!user));
+  connected = false;
 
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService) { }
+
+  ngOnInit(): void {
+    this.authService.getCurrentUser().pipe(
+      map((user) => !!user)
+    ).subscribe((isConnected) => this.connected = isConnected);
   }
 }
