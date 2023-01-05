@@ -29,7 +29,6 @@ export class AuthInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    console.log('hey')
     return this.authService.getCurrentUser().pipe(
       tap((v) => console.log('interceptor', v)),
       take(1),
@@ -58,6 +57,6 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   private _handle401Error(currentError: HttpErrorResponse): void {
-    this.router.navigate(['/error/403'], { state: {error: currentError.error} });
+    this.router.navigate(['/public/signin'], { state: {error: currentError.error} });
   }
 }
